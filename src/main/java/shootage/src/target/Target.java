@@ -1,9 +1,11 @@
 package shootage.src.target;
 
 import shootage.src.ai.ShotHistory;
+import shootage.src.game.Shot;
 import shootage.src.genetics.Genome;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Random;
 
 public class Target {
@@ -38,10 +40,49 @@ public class Target {
         this.fitness += value;
     }
 
-    public void update(ShotHistory shotHistory, int panelWidth, int panelHeight) {
+    /**
+     * Smarter update: move based on
+     * - random movement (genes[0])
+     * - avoidance of current shots (genes[1])
+     * - avoidance of shot history heatmap (genes[2])
+     */
+    public void update(List<Shot> currentShots, ShotHistory shotHistory, int panelWidth, int panelHeight) {
+        if (!alive) return;
         double[] genes = genome.getGenes();
-        double moveX = (rand.nextDouble() - 0.5) * genes[0] * 12;
-        double moveY = (rand.nextDouble() - 0.5) * genes[1] * 12;
+        double randomScale = genes.length > 0 ? genes[0] : 1.0;
+        double avoidanceScale = genes.length > 1 ? genes[1] : 1.0;
+        double historyScale = genes.length > 2 ? genes[2] : 1.0;
+
+        // 1. Random movement for unpredictability
+        double randomX = (rand.nextDouble() - 0.5) * randomScale * 12;
+        double randomY = (rand.nextDouble() - 0.5) * randomScale * 12;
+
+        // 2. Avoid current shots in the air
+        double avoidX = 0, avoidY = 0;
+        for (Shot s : currentShots) {
+            double dx = x - s.x;
+            double dy = y - s.y;
+            double dist2 = dx * dx + dy * dy;
+            if (dist2 < 40000) { // "Threat" zone (200 px radius)
+                avoidX += dx / (dist2 + 1);
+                avoidY += dy / (dist2 + 1);
+            }
+        }
+        avoidX *= avoidanceScale * 24;
+        avoidY *= avoidanceScale * 24;
+
+        // 3. Avoid "hot zones" from previous shots (shot history heatmap)
+        int hx = Math.max(0, Math.min(panelWidth - 1, x));
+        int hy = Math.max(0, Math.min(panelHeight - 1, y));
+        double shotDensity = shotHistory != null ? shotHistory.getDensityAt(hx, hy) : 0.0;
+        // The greater the shot density, the more the target is pushed away
+        double historyAngle = rand.nextDouble() * 2 * Math.PI;
+        double historyX = Math.cos(historyAngle) * historyScale * shotDensity * 10;
+        double historyY = Math.sin(historyAngle) * historyScale * shotDensity * 10;
+
+        // Combine all movement vectors
+        double moveX = randomX + avoidX + historyX;
+        double moveY = randomY + avoidY + historyY;
 
         x += (int) moveX;
         y += (int) moveY;

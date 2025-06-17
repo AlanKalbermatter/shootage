@@ -2,33 +2,23 @@ package shootage.src.game;
 
 import shootage.src.target.Target;
 
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.List;
 
 public class GamePanel extends JPanel {
+    private static final int CHARGE_BAR_WIDTH = 180;
+    private static final int CHARGE_BAR_HEIGHT = 20;
+    private static final long CHARGE_DURATION_MS = 1200;
     private final GameEngine engine;
     private Timer timer;
     private boolean aiming = false;
     private int aimX, aimY;
-
     // Charge bar variables
     private boolean charging = false;
     private long chargeStartTime = 0;
     private float chargePower = 0;
-    private static final int CHARGE_BAR_WIDTH = 180;
-    private static final int CHARGE_BAR_HEIGHT = 20;
-    private static final long CHARGE_DURATION_MS = 1200;
 
     public GamePanel(GameEngine engine) {
         this.engine = engine;
@@ -62,6 +52,7 @@ public class GamePanel extends JPanel {
                     repaint();
                 }
             }
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (charging && aiming && SwingUtilities.isLeftMouseButton(e) && engine.isRunningRound()) {
@@ -134,7 +125,7 @@ public class GamePanel extends JPanel {
                 vy += Shot.GRAVITY;
                 px += vx;
                 py += vy;
-                g.fillOval((int)px - 2, (int)py - 2, 4, 4);
+                g.fillOval((int) px - 2, (int) py - 2, 4, 4);
                 if (px < 0 || px > GameEngine.FIELD_WIDTH || py < 0 || py > GameEngine.FIELD_HEIGHT) break;
             }
         }
@@ -164,7 +155,7 @@ public class GamePanel extends JPanel {
             g.setColor(Color.LIGHT_GRAY);
             g.fillRect(barX, barY, CHARGE_BAR_WIDTH, CHARGE_BAR_HEIGHT);
             g.setColor(Color.GREEN.darker());
-            g.fillRect(barX, barY, (int)(CHARGE_BAR_WIDTH * chargePower), CHARGE_BAR_HEIGHT);
+            g.fillRect(barX, barY, (int) (CHARGE_BAR_WIDTH * chargePower), CHARGE_BAR_HEIGHT);
             g.setColor(Color.BLACK);
             g.drawRect(barX, barY, CHARGE_BAR_WIDTH, CHARGE_BAR_HEIGHT);
         }

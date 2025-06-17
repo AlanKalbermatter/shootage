@@ -53,7 +53,7 @@ public class GameEngine {
         activeShots.clear();
     }
 
-    // Timer-based update: move shots and check for hits
+    // Timer-based update: move shots and check for hits, move targets smartly
     public void updateShotsAndTargets() {
         // Move shots
         for (Shot shot : new ArrayList<>(activeShots)) {
@@ -62,6 +62,11 @@ public class GameEngine {
 
         // Remove shots out of bounds
         activeShots.removeIf(s -> s.x < 0 || s.x > FIELD_WIDTH || s.y < 0 || s.y > FIELD_HEIGHT);
+
+        // Move targets in response to shots and shot history
+        for (Target tar : population) {
+            tar.update(activeShots, shotHistory, FIELD_WIDTH, FIELD_HEIGHT);
+        }
 
         // Check collisions
         for (Shot shot : new ArrayList<>(activeShots)) {
@@ -73,9 +78,17 @@ public class GameEngine {
             }
         }
 
-        // Update hit animation states
+        // Update hit animation states & add fitness for alive targets
         for (Target t : population) {
             t.updateHitState();
+            if (t.isAlive()) {
+                t.addFitness(1.0);
+                // Optionally reward being far from "hot zone":
+                int hx = Math.max(0, Math.min(FIELD_WIDTH - 1, t.getX()));
+                int hy = Math.max(0, Math.min(FIELD_HEIGHT - 1, t.getY()));
+                double density = shotHistory.getDensityAt(hx, hy);
+                t.addFitness(1.0 / (1.0 + density));
+            }
         }
     }
 
@@ -91,7 +104,6 @@ public class GameEngine {
 
         for (Target tar : population) {
             if (tar.isAlive()) {
-                tar.update(shotHistory, FIELD_WIDTH, FIELD_HEIGHT);
                 if (tar.isHit(shotX, shotY)) {
                     tar.registerHit();
                     tar.die();
