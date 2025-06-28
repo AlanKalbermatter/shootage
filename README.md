@@ -19,18 +19,16 @@ Shootage was developed as a code challenge for GamersHub to demonstrate genetic 
 ## How to Play
 
 1. **Launch the Game**: Run the application to see the main menu
-2. **Start Game**: Click the "Start Game" button to begin
-3. **Shooting Mechanism**:
+2. **Shooting Mechanism**:
    - Click and hold to aim
    - Continue holding to charge your shot (more power = faster shots)
    - Release to fire
    - A red trajectory arc shows the predicted path of your shot
    - Green charge bar in the bottom left shows shot power
-4. **Controls**:
-   - ESC: Show/hide menu
-   - SPACE: Start a new round with the current targets
-   - N: Evolve to the next generation
-   - R: Reset the current round
+3. **Controls**:
+   - `SPACE`: Start a new round with the current targets
+   - `N`: Evolve to the next generation
+   - `R`: Reset the current round
 
 ## The Genetic Algorithm
 
